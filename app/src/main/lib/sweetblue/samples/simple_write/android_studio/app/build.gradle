@@ -1,0 +1,23 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion '24.0.3'
+
+    defaultConfig {
+        applicationId "com.idevicesinc.sweetblue.simple_write"
+        minSdkVersion 18
+        targetSdkVersion 24
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt'
+        }
+    }
+
+    dependencies {
+        compile fileTree(dir: 'libs', include: '*.jar')
+    }
+}
