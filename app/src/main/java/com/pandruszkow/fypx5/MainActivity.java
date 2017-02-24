@@ -5,9 +5,16 @@ import android.bluetooth.le.AdvertiseCallback;
 import android.bluetooth.le.AdvertiseData;
 import android.bluetooth.le.AdvertiseSettings;
 import android.bluetooth.le.BluetoothLeAdvertiser;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanRecord;
+import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
+import android.os.Handler;
 import android.os.ParcelUuid;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -27,10 +34,46 @@ public class MainActivity extends AppCompatActivity {
     private static final String[] permissionsToRequest =
             {"android.permission.ACCESS_FINE_LOCATION"};
     private static final String ble_uuid = "3e75bbea-be47-43c4-9188-ccf44016f503";
+    private static final ParcelUuid pUuid = new ParcelUuid( UUID.fromString( ble_uuid ) );
+
     private static final BluetoothLeAdvertiser advertiser = BluetoothAdapter.getDefaultAdapter().getBluetoothLeAdvertiser();
+
+    private BluetoothLeScanner mBluetoothLeScanner;
+    private Handler mHandler = new Handler();
 
     TextView statusView = null;
     TextView textReceivedView = null;
+
+    private ScanCallback mScanCallback = new ScanCallback() {
+        @Override
+        public void onScanResult(int callbackType, ScanResult result) {
+            super.onScanResult(callbackType, result);
+            if( result == null || result.getDevice() == null) {
+                return;
+            }
+            ScanRecord sr = result.getScanRecord();
+            String devDescription =
+                    "Raw bytes: " + sr.getServiceData(pUuid) + "\n"
+                    + "String: " + new String(sr.getServiceData(pUuid), StandardCharsets.UTF_8) + "\n"
+                    + "Device name: " + sr.getDeviceName();
+
+
+            textReceivedView.setText(devDescription);
+        }
+
+        @Override
+        public void onBatchScanResults(List<ScanResult> results) {
+            super.onBatchScanResults(results);
+        }
+
+        @Override
+        public void onScanFailed(int errorCode) {
+            Log.e( "BLE", "Discovery onScanFailed: " + errorCode );
+            super.onScanFailed(errorCode);
+        }
+    };
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,14 +88,23 @@ public class MainActivity extends AppCompatActivity {
 
     }
     public void discover(View v){
+        mBluetoothLeScanner = BluetoothAdapter.getDefaultAdapter().getBluetoothLeScanner();
+        ScanSettings sSettings = new ScanSettings.Builder()
+                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                .build();
+        mBluetoothLeScanner.startScan(mScanCallback);
 
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mBluetoothLeScanner.stopScan(mScanCallback);
+            }
+        }, 10000);
     }
 
 
     public void advertise(View v) {
-        statusView.setText("Advertise mode on");
 
-        BluetoothLeAdvertiser bcaster = BluetoothAdapter.getDefaultAdapter().getBluetoothLeAdvertiser();
         AdvertiseSettings bcastSettings = new AdvertiseSettings.Builder()
                 .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
                 .setConnectable(true)
@@ -62,11 +114,9 @@ public class MainActivity extends AppCompatActivity {
 
         String sampleBleData = "I am a sample text";
 
-        ParcelUuid pUuid = new ParcelUuid( UUID.fromString( ble_uuid ) );
         AdvertiseData bcastData = new AdvertiseData.Builder()
-                .setIncludeDeviceName(true)
                 .addServiceUuid(pUuid)
-                .addServiceData(pUuid, giveUtf8EncodedSlice(sampleBleData, 0, 18))
+                .addServiceData(pUuid, giveUtf8EncodedSlice(sampleBleData, 0, 4))
                 .build();
 
         AdvertiseCallback advertisingCallback = new AdvertiseCallback() {
@@ -83,6 +133,9 @@ public class MainActivity extends AppCompatActivity {
         };
 
         advertiser.startAdvertising( bcastSettings, bcastData, advertisingCallback );
+
+        statusView.setText("Advertise mode on");
+
     }
 
     private byte[] giveUtf8EncodedSlice(String src, int rangeStartIncl, int rangeEndExcl){
