@@ -10,35 +10,76 @@
     tools:context="com.pandruszkow.fypx5.MainActivity">
 
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentBottom="true"
+    <GridLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:columnCount="2"
+        android:rowCount="7"
         android:layout_alignParentEnd="true">
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="Switch to server"
+            android:id="@+id/button2"
+            android:layout_row="0"
+            android:layout_column="1"
+            android:onClick="becomeServer" />
+
+        <Button
+            android:layout_width="109dp"
+            android:layout_height="wrap_content"
             android:text="Advertise"
             android:id="@+id/advertise_btn"
-            android:layout_gravity="center_horizontal"
-            android:onClick="advertise" />
+            android:layout_gravity="left"
+            android:onClick="advertise"
+            android:layout_row="1"
+            android:layout_column="0" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Switch to client"
+            android:id="@+id/button"
+            android:layout_row="0"
+            android:layout_column="0"
+            android:onClick="becomeClient" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Discover"
             android:id="@+id/discover_btn"
-            android:layout_gravity="center_horizontal"
-            android:onClick="discover" />
+            android:onClick="discover"
+            android:layout_row="1"
+            android:layout_column="1"
+            android:layout_gravity="left" />
+
+        <EditText
+            android:layout_width="208dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/msg_text"
+            android:layout_row="2"
+            android:layout_column="0"
+            android:hint="Message here" />
+
+        <Button
+            android:layout_width="66dp"
+            android:layout_height="wrap_content"
+            android:text="Send"
+            android:id="@+id/send_btn"
+            android:layout_row="2"
+            android:layout_column="1"
+            android:onClick="addToStoreAndSync" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="Status"
-            android:id="@+id/textView3" />
+            android:id="@+id/textView3"
+            android:layout_row="3"
+            android:layout_column="0" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -46,21 +87,46 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Medium Text"
             android:id="@+id/status_lbl"
-            android:layout_gravity="center_horizontal" />
+            android:layout_gravity="center_horizontal"
+            android:layout_row="3"
+            android:layout_column="1" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="Text received"
-            android:id="@+id/textView4" />
+            android:id="@+id/textView4"
+            android:layout_row="4"
+            android:layout_column="0" />
+
+        <TextView
+            android:layout_width="147dp"
+            android:layout_height="107dp"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Medium Text"
+            android:id="@+id/textReceived_lbl"
+            android:layout_gravity="center_horizontal"
+            android:layout_row="4"
+            android:layout_column="1" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Medium Text"
-            android:id="@+id/textReceived_lbl"
-            android:layout_gravity="center_horizontal" />
-    </LinearLayout>
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Data Received"
+            android:id="@+id/textView"
+            android:layout_row="5"
+            android:layout_column="0" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Data received will appear here"
+            android:id="@+id/dataReceived_lbl"
+            android:layout_row="6"
+            android:layout_column="0"
+            android:layout_columnSpan="2" />
+
+    </GridLayout>
 </RelativeLayout>

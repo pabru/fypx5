@@ -2,17 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.pandruszkow.fypx5">
 
-    <!-- SweetBlue required statements start -->
-    <uses-feature android:name="android.hardware.bluetooth_le" android:required="true" />
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-sdk android:minSdkVersion="14" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <!-- NOTE: Location is a new requirement for scanning in Android M.  -->
-    <!--       You may use ACCESS_FINE_LOCATION also or instead.         -->
-    <!-- SweetBlue required statements end -->
+    <!-- Above for wifi p2p -->
 
     <application
         android:allowBackup="true"
