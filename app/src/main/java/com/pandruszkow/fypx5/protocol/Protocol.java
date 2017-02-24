@@ -1,19 +1,34 @@
 package com.pandruszkow.fypx5.protocol;
 
+import android.app.Activity;
 import android.util.Log;
+
+import com.pandruszkow.fypx5.MainActivity;
+import com.peak.salut.Callbacks.SalutCallback;
+import com.peak.salut.Callbacks.SalutDataCallback;
+import com.peak.salut.Salut;
+import com.peak.salut.SalutDataReceiver;
+import com.peak.salut.SalutServiceData;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Created by piotrek on 23/02/17.
  */
-public class Protocol {
+public class Protocol implements SalutDataCallback{
 
     private final static String TAG = Protocol.class.getCanonicalName();
+
+    public final static String applicationName = "fypx5";
+    public final static int portNumber = 50123;
+    public final static String peerId = ""+new Random().nextInt();
+
+    private static Salut network = null;
 
     private static final String
         HELLO = "HELLO",
@@ -31,6 +46,20 @@ public class Protocol {
         BYE = "BYE";
 
     private Map<String, String> messageStore = new HashMap<>();
+
+    void initialise(final Activity activity){
+        network = new Salut(
+                new SalutDataReceiver(activity, this),
+                getSalutServiceData(),
+                //callback in case wifi direct fails
+                () -> ((MainActivity)activity).toast("Wifi Direct not supported on this device")
+        );
+
+    }
+
+    SalutServiceData getSalutServiceData(){
+        return new SalutServiceData(applicationName, portNumber, peerId);
+    }
 
 
     private void main_clientSide(){
@@ -224,5 +253,10 @@ public class Protocol {
     }
     private boolean listenTo(String expectedReply){
         return listen().equals(expectedReply);
+    }
+
+    @Override
+    public void onDataReceived(Object o) {
+
     }
 }
