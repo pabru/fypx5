@@ -12,8 +12,8 @@ import java.util.Date;
 
 public class ChatMessage {
 
-    String messageHash;
-    String author;
-    Date created;
-    String body;
+    public String messageHash;
+    public String author;
+    public Date created;
+    public String body;
 }

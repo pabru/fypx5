@@ -3,7 +3,6 @@ package com.pandruszkow.fypx5.protocol.message;
 import android.support.annotation.NonNull;
 
 import com.bluelinelabs.logansquare.annotation.JsonObject;
-import com.pandruszkow.fypx5.protocol.Protocol;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +17,19 @@ import java.util.Map;
 public class ProtocolMessage {
 
     @NonNull public String pMsgType;
+
+    //Constant pre-canned messages to avoid regenerating objects needlessly
+    private static final ProtocolMessage
+            CANNED_HELLO = new ProtocolMessage(TYPE.hello),
+            CANNED_BYE = new ProtocolMessage(TYPE.bye);
+    private static final ProtocolMessage
+            CANNED_REPLY_OK = new ProtocolMessage(TYPE.reply),
+            CANNED_REPLY_FAIL = new ProtocolMessage(TYPE.reply);
+            static {
+                CANNED_REPLY_OK.successful = true;
+                CANNED_REPLY_FAIL.successful = false;
+            }
+    //End constants
 
     public List<String> requestedMessageHashes;
     public List<ChatMessage> chatMessages;
@@ -44,17 +56,17 @@ public class ProtocolMessage {
     }
 
     public static ProtocolMessage reply(boolean successful){
-        ProtocolMessage out = new ProtocolMessage(TYPE.reply);
-        out.successful = successful;
-
-        return out;
+        if(successful){
+            return CANNED_REPLY_OK;
+        } else {
+            return CANNED_REPLY_FAIL;
+        }
     }
-
     public static ProtocolMessage hello(){
-        return new ProtocolMessage(TYPE.hello);
+        return CANNED_HELLO;
     }
     public static ProtocolMessage bye(){
-        return new ProtocolMessage(TYPE.bye);
+        return CANNED_BYE;
     }
 
     public enum TYPE {
