@@ -644,7 +644,7 @@ public class BleManager
 			private final BleManager m_manager;
 
 			/**
-			 * Message associated with the assert, or an empty string.
+			 * ProtocolMessage associated with the assert, or an empty string.
 			 */
 			public String message(){  return m_message;  }
 			private final String m_message;

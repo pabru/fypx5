@@ -13,6 +13,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.pandruszkow.fypx5.protocol.Protocol;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getCanonicalName();
@@ -38,32 +40,14 @@ public class MainActivity extends AppCompatActivity {
         textReceivedView = (TextView)findViewById(R.id.textReceived_lbl);
         messageText = (EditText)findViewById(R.id.msg_text);
 
-        //wifi p2p setup
-        mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
-        mChannel = mManager.initialize(this, getMainLooper(), null);
-        mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this);
-        mIntentFilter = new IntentFilter();
-        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+        //TODO wifi p2p setup
+
 
 
     }
     public void discover(View v){
         //TODO Wp2p code here
 
-        mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
-            @Override
-            public void onSuccess() {
-                toast("ended discover");
-            }
-
-            @Override
-            public void onFailure(int reasonCode) {
-                toast("failed at discoverPeers");
-            }
-        });
 
     }
 
@@ -88,32 +72,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void becomeClient(View v){
-
+        Protocol.switchRole(Protocol.ROLE.CLIENT);
 
     }
 
     public void becomeServer(View v){
+        Protocol.switchRole(Protocol.ROLE.SERVER);
 
     }
 
     public void toast(String text){
         Toast.makeText(MainActivity.this, text, Toast.LENGTH_SHORT).show();
-    }
-
-
-
-
-    /* register the broadcast receiver with the intent values to be matched */
-    @Override
-    protected void onResume() {
-        super.onResume();
-        registerReceiver(mReceiver, mIntentFilter);
-    }
-    /* unregister the broadcast receiver */
-    @Override
-    protected void onPause() {
-        super.onPause();
-        unregisterReceiver(mReceiver);
     }
 
 }

@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.Function;
 
 /**
  * Created by piotrek on 23/02/17.
@@ -29,6 +30,12 @@ public class Protocol implements SalutDataCallback{
     public final static String peerId = ""+new Random().nextInt();
 
     private static Salut network = null;
+
+    private static ROLE peerRole = ROLE.SERVER;
+
+    public static void switchRole(ROLE newRole){
+        peerRole = newRole;
+    }
 
     private static final String
         HELLO = "HELLO",
@@ -258,5 +265,10 @@ public class Protocol implements SalutDataCallback{
     @Override
     public void onDataReceived(Object o) {
 
+    }
+
+    public enum ROLE {
+        CLIENT,
+        SERVER
     }
 }
