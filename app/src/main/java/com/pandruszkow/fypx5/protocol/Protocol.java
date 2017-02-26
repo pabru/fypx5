@@ -1,7 +1,7 @@
 package com.pandruszkow.fypx5.protocol;
 
 import android.app.Activity;
-import android.util.Log;
+import android.net.wifi.p2p.WifiP2pDevice;
 
 import com.pandruszkow.fypx5.MainActivity;
 import com.pandruszkow.fypx5.protocol.message.ChatMessage;
@@ -12,7 +12,6 @@ import com.peak.salut.SalutDataReceiver;
 import com.peak.salut.SalutServiceData;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,59 +52,99 @@ public class Protocol implements SalutDataCallback{
         return new SalutServiceData(applicationName, portNumber, peerId);
     }
 
+    public void runMessageStoreSync(WifiP2pDevice peer, boolean isClient){
 
-    private void main_clientSide(){
-        ProtocolMessage clientRequest, serverReply;
+        hello(isClient);
 
-        //handshake stage
-        hello_clientSide();
+        List<String> theirHashes = sync_hashes(isClient, new ArrayList<>(messageStore.keySet()));
+        Map<String, ChatMessage> messagesToSend = findOurMessagesNotInTheirMessageStore(theirHashes);
 
-        //message hash exchange stage
-        say_sync_hashes();
-        String[] server_messageHashes = listenTo_sync_hashes();
+        Map<String, ChatMessage> theirMessagesWeAreMissing = sync_messages(isClient, messagesToSend);
 
-        //filter to find which of our messages server is missing
-        List<String> toSend_sync_hashes = new ArrayList<>();
-        // clientStore NOT IN serverStore
-        toSend_sync_hashes.addAll(messageStore.keySet());
-        toSend_sync_hashes.removeAll(Arrays.asList(server_messageHashes));
+        bye(isClient);
+    }
 
-        Map<String, ChatMessage> messagesToSend = filterMap(toSend_sync_hashes, messageStore);
 
-        //exchange missing messages on both sides
-        say_sync_messages(messagesToSend);
-        Map<String, ChatMessage> missingMessages = listenTo_sync_messages();
-        say(ProtocolMessage.bye());
-        listenTo(ProtocolMessage.bye());
+    private Map<String,ChatMessage> sync_messages(boolean isClient, Map<String,ChatMessage> ourMessagesTheyAreMissing){
+
+        Map<String,ChatMessage> theirMessagesWeAreMissing;
+
+        if(isClient){
+            say(ProtocolMessage.sync_messages(ourMessagesTheyAreMissing));
+            theirMessagesWeAreMissing = listenTo_sync_messages();
+        } else {
+            theirMessagesWeAreMissing = listenTo_sync_messages();
+            say(ProtocolMessage.sync_messages(ourMessagesTheyAreMissing));
+        }
+
+        return theirMessagesWeAreMissing;
+    }
+
+    private List<String> sync_hashes(boolean isClient, List<String> ourHashes){
+        ProtocolMessage pmOurHashes = ProtocolMessage.sync_hashes(ourHashes);
+        ProtocolMessage pmTheirHashes;
+
+        if(isClient) {
+            say(pmOurHashes);
+            pmTheirHashes = listen();
+        } else {
+            pmTheirHashes = listen();
+            say(pmOurHashes);
+        }
+
+        if(pmTheirHashes.pMsgType.equals(ProtocolMessage.TYPE.sync_hashes.toString())){
+            return pmTheirHashes.requestedMessageHashes;
+        } else {
+            //error occurred
+            return null;
+        }
 
     }
-    private void main_serverSide(){
-        //handshake stage
-        hello_serverSide();
 
-        //message hash exchange stage
-        String[] client_messageHashes = listenTo_sync_hashes();
-        say_sync_hashes();
+    private boolean bye(boolean isClient){
+        boolean byeSuccessful = false;
 
-        //filter to find which of our messages client is missing
+        if(isClient){
+            say(ProtocolMessage.bye());
+            byeSuccessful = listenTo(ProtocolMessage.bye());
+        } else {
+            byeSuccessful = listenTo(ProtocolMessage.bye());
+            say(ProtocolMessage.bye());
+        }
+
+        return byeSuccessful;
+    }
+    private boolean hello(boolean isClient){
+        boolean helloSuccessful = false;
+
+        if(isClient){
+
+            say(ProtocolMessage.hello());
+
+            helloSuccessful = listenTo(ProtocolMessage.hello());
+
+        } else {
+
+            helloSuccessful = listenTo(ProtocolMessage.hello());
+
+            if(helloSuccessful) say(ProtocolMessage.hello());
+        }
+
+        return helloSuccessful;
+    }
+
+    private Map<String, ChatMessage> findOurMessagesNotInTheirMessageStore(List<String> theirHashes) {
+        //filter to find which of our messages client is missing, i.e. in our store but not in their store.
+        List<String> ourHashes = new ArrayList<>(messageStore.keySet());
         List<String> messagesToSend_hashes = new ArrayList<>();
-        // clientStore NOT IN serverStore
-        messagesToSend_hashes.addAll(messageStore.keySet());
-        messagesToSend_hashes.removeAll(Arrays.asList(client_messageHashes));
 
-        Map<String, ChatMessage> messagesToSend = filterMap(messagesToSend_hashes, messageStore);
+        messagesToSend_hashes.addAll(ourHashes);
+        messagesToSend_hashes.removeAll(theirHashes);
 
-        //exchange missing messages on both sides
-        Map<String, ChatMessage> missingMessages = listenTo_sync_messages();
-        say_sync_messages(messagesToSend);
-        listenTo(ProtocolMessage.bye());
-        say(ProtocolMessage.bye());
-
+        return filterMap(messagesToSend_hashes, messageStore);
     }
 
-    private void say_sync_messages(Map<String, ChatMessage> messages){
-        say(ProtocolMessage.sync_messages(messages));
-    }
+
     private Map<String, ChatMessage> listenTo_sync_messages(){
         Map<String, ChatMessage> out = new HashMap<>();
 
@@ -120,49 +159,6 @@ public class Protocol implements SalutDataCallback{
         }
     }
 
-
-
-
-    private void say_MessageStoreHashes(){
-
-    }
-
-
-
-    private boolean hello_clientSide(){
-        say(ProtocolMessage.hello());
-        return listenTo(ProtocolMessage.hello());
-    }
-    private boolean hello_serverSide(){
-
-        boolean hello_ok = listenTo(ProtocolMessage.hello());
-
-        if(hello_ok) {
-            say(ProtocolMessage.hello());
-        }
-
-        return hello_ok;
-    }
-
-    private void say_sync_hashes() {
-        ProtocolMessage hashDumpMsg = ProtocolMessage.sync_hashes(new ArrayList<>(messageStore.keySet()));
-        say(hashDumpMsg);
-    }
-    private String[] listenTo_sync_hashes(){
-        //TODO!
-
-
-        return null;
-    }
-
-    private String getMessageHashDump() {
-        StringBuilder messageHashDumpSb = new StringBuilder();
-
-        for(String messageHash : messageStore.keySet()){
-            messageHashDumpSb.append(messageHash).append('\n');
-        }
-        return messageHashDumpSb.toString();
-    }
     private static Map<String, ChatMessage> filterMap(List<String> retainFilter, Map<String, ChatMessage> map){
         Map<String, ChatMessage> out = new HashMap<>();
 
