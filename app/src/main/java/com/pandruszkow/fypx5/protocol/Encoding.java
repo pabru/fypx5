@@ -19,20 +19,4 @@ public class Encoding {
             throw new RuntimeException("Something went very wrong, SHA-256 is not a supported hashing algorithm!");
         }
     }
-
-    public static String urlEncode(String text){
-        try {
-            return URLEncoder.encode(text, StandardCharsets.UTF_8.toString());
-        } catch (UnsupportedEncodingException uee){
-            throw new RuntimeException("Something went wrong. UTF-8 encoding not supported.");
-        }
-    }
-
-    public static String urlDecode(String urlEncodedText){
-        try {
-            return URLDecoder.decode(urlEncodedText, StandardCharsets.UTF_8.toString());
-        } catch (UnsupportedEncodingException uee){
-            throw new RuntimeException("Something went wrong. UTF-8 encoding not supported.");
-        }
-    }
 }

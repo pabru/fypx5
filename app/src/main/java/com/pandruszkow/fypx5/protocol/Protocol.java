@@ -2,13 +2,15 @@ package com.pandruszkow.fypx5.protocol;
 
 import android.app.Activity;
 import android.net.wifi.p2p.WifiP2pDevice;
+import android.util.Log;
 
-import com.pandruszkow.fypx5.MainActivity;
+import com.pandruszkow.fypx5.ToastableActivity;
 import com.pandruszkow.fypx5.protocol.message.ChatMessage;
 import com.pandruszkow.fypx5.protocol.message.ProtocolMessage;
 import com.peak.salut.Callbacks.SalutDataCallback;
 import com.peak.salut.Salut;
 import com.peak.salut.SalutDataReceiver;
+import com.peak.salut.SalutDevice;
 import com.peak.salut.SalutServiceData;
 
 import java.util.ArrayList;
@@ -20,36 +22,39 @@ import java.util.Random;
 /**
  * Created by piotrek on 23/02/17.
  */
-public class Protocol implements SalutDataCallback{
+public class Protocol implements SalutDataCallback {
 
     private final static String TAG = Protocol.class.getCanonicalName();
 
     public final static String applicationName = "fypx5";
     public final static int portNumber = 50123;
-    public final static String peerId = ""+new Random().nextInt();
-
-    private static Salut network = null;
-
-    private static ROLE peerRole = ROLE.SERVER;
-
-    public static void switchRole(ROLE newRole){
-        peerRole = newRole;
-    }
-
+    public final static String peerId = ""+new Random().nextInt(50); //to keep the peer Id fairly short. Android NSD name length restriction.
+    private final static SalutServiceData salutServiceData = new SalutServiceData(applicationName, portNumber, peerId);
     private Map<String, ChatMessage> messageStore = new HashMap<>();
 
-    void initialise(final Activity activity){
-        network = new Salut(
-                new SalutDataReceiver(activity, this),
-                getSalutServiceData(),
+
+    private Salut network = null;
+    private ROLE peerRole = ROLE.SERVER;
+
+    public Protocol(final Activity parent, ROLE initialRole){
+        this.network = new Salut(
+                new SalutDataReceiver(parent, this),
+                salutServiceData,
                 //callback in case wifi direct fails
-                () -> ((MainActivity)activity).toast("Wifi Direct not supported on this device")
+                () -> ((ToastableActivity) parent).toast("Wifi Direct not supported on this device")
         );
 
-    }
-
-    SalutServiceData getSalutServiceData(){
-        return new SalutServiceData(applicationName, portNumber, peerId);
+        this.peerRole = initialRole;
+        switch(initialRole){
+            case SERVER:
+                this.network.startNetworkService((device)->Log.d(TAG, device.readableName + " has connected!"));
+                break;
+            case CLIENT:
+                this.network.discoverNetworkServices((device -> {
+                    Log.d(TAG, "A device has connected with the name " + device.deviceName);
+                }), true);
+                break;
+        }
     }
 
     public void runMessageStoreSync(WifiP2pDevice peer, boolean isClient){
