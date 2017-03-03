@@ -1,5 +1,7 @@
 package com.pandruszkow.fypx5;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,81 +10,30 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.pandruszkow.fypx5.protocol.Config;
 import com.pandruszkow.fypx5.protocol.Protocol;
 import com.pandruszkow.fypx5.protocol.message.ProtocolMessage;
+import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Callbacks.SalutDataCallback;
 import com.peak.salut.Salut;
 import com.peak.salut.SalutDataReceiver;
 import com.peak.salut.SalutDevice;
 import com.peak.salut.SalutServiceData;
 
-public class Harness1 extends AppCompatActivity implements ToastableActivity, View.OnClickListener{
+import java.util.List;
+
+public class Harness1 extends Activity implements ToastableActivity, SalutDataCallback{
 
     TextView har1_txtV;
     Protocol proto;
 
 
     public static final String TAG = "Harness1";
-    public SalutDataReceiver dataReceiver;
     public SalutServiceData serviceData;
     public Salut network;
     public Button hostingBtn;
     public Button discoverBtn;
 
-    private SalutDataCallback recv = (data) -> {
-        toast(data.toString());
-    } ;
-
-    @Override
-    public void onClick(View v) {
-
-        if(!Salut.isWiFiEnabled(getApplicationContext()))
-        {
-            Toast.makeText(getApplicationContext(), "Please enable WiFi first.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if(v.getId() == R.id.hosting_button)
-        {
-            if(!network.isRunningAsHost)
-            {
-                network.startNetworkService((salutDevice) -> {
-                        Toast.makeText(getApplicationContext(), "Device: " + salutDevice.instanceName + " connected.", Toast.LENGTH_SHORT).show();
-                });
-
-                hostingBtn.setText("Stop Service");
-                discoverBtn.setAlpha(0.5f);
-                discoverBtn.setClickable(false);
-            }
-            else
-            {
-                network.stopNetworkService(false);
-                hostingBtn.setText("Start Service");
-                discoverBtn.setAlpha(1f);
-                discoverBtn.setClickable(true);
-            }
-        }
-        else if(v.getId() == R.id.discover_services)
-        {
-            if(!network.isRunningAsHost && !network.isDiscovering)
-            {
-                network.discoverNetworkServices(() -> {
-                        Toast.makeText(getApplicationContext(), "Device: " + network.foundDevices.get(0).instanceName + " found.", Toast.LENGTH_SHORT).show();
-
-                }, true);
-                discoverBtn.setText("Stop Discovery");
-                hostingBtn.setAlpha(0.5f);
-                hostingBtn.setClickable(false);
-            }
-            else
-            {
-                network.stopServiceDiscovery(true);
-                discoverBtn.setText("Discover Services");
-                hostingBtn.setAlpha(1f);
-                hostingBtn.setClickable(false);
-            }
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,52 +42,97 @@ public class Harness1 extends AppCompatActivity implements ToastableActivity, Vi
 
         hostingBtn = (Button) findViewById(R.id.hosting_button);
         discoverBtn = (Button) findViewById(R.id.discover_services);
+        Button thirdBtn = (Button) findViewById(R.id.third_button_h1);
+        thirdBtn.setOnClickListener((v)->onClick_thirdB(v));
 
-        hostingBtn.setOnClickListener(this);
-        discoverBtn.setOnClickListener(this);
 
+        network = new Salut(
+                new SalutDataReceiver(this, this),
+                Config.salutServiceData,
+                //callback in case wifi direct fails
+                () ->  toast("Wifi Direct not supported on this device")
+        );
 
-        dataReceiver = new SalutDataReceiver(this, recv);
-        /*Populate the details for our awesome service. */
-        serviceData = new SalutServiceData("fypx6", 60606,
-                "HOST");
-
-        /*Create an instance of the Salut class, with all of the necessary data from before.
-        * We'll also provide a callback just in case a device doesn't support WiFi Direct, which
-        * Salut will tell us about before we start trying to use methods.*/
-        network = new Salut(dataReceiver, serviceData, ()->{
-                // wiFiFailureDiag.show();
-                // OR
-                Log.e(TAG, "Sorry, but this device does not support WiFi Direct.");
-            });
 
         har1_txtV = (TextView) findViewById(R.id.har1_txt);
     }
 
-    public void onClick_listFound(View v){
-        StringBuilder found = new StringBuilder();
+    @Override
+    public void onDataReceived(Object o){
+        toast("Received data! : "+o);
+    }
 
-        for(SalutDevice dev : network.foundDevices)
-        {
-            found.append(dev.toString()).append('\n');
+    public void onClick_serverButton(View v) {
+
+        if (!network.isRunningAsHost) {
+            network.startNetworkService((salutDevice) -> toast("Device: " + salutDevice.instanceName + " connected to server.")
+            );
+
+            hostingBtn.setText("Stop Service");
+            discoverBtn.setAlpha(0.5f);
+            discoverBtn.setClickable(false);
+        } else {
+            network.stopNetworkService(false);
+            hostingBtn.setText("Start Service");
+            discoverBtn.setAlpha(1f);
+            discoverBtn.setClickable(true);
         }
 
-        har1_txtV.setText(found.toString());
+    }
+    public void onClick_discoverButton(View v){
+        if(!network.isRunningAsHost && !network.isDiscovering)
+        {
+            network.discoverNetworkServices(() -> {
+                for(SalutDevice dev : network.foundDevices) {
+                    toast("Server: " + dev.instanceName + " found.");
+                }
+            }, true);
+            discoverBtn.setText("Stop Discovery");
+            hostingBtn.setAlpha(0.5f);
+            hostingBtn.setClickable(false);
+        }
+        else
+        {
+            network.stopServiceDiscovery(false);
+            discoverBtn.setText("Discover Services");
+            hostingBtn.setAlpha(1f);
+            hostingBtn.setClickable(false);
+        }
+
     }
 
-    public void onClick_beDiscoverable(View v){
 
-        proto = new Protocol(this, Protocol.ROLE.SERVER);
 
+    public void onClick_thirdB(View v){
+        //Class goTo = NoticeBoardActivity.class;
+
+        Class goTo = Harness2.class;
+
+        Intent postNewI = new Intent(this, goTo);
+        //startActivity(postNewI);
+
+        SalutDevice srv = network.foundDevices.get(0);
+
+        if(network.registeredHost==null){
+            network.registerWithHost(srv,
+                    () -> {
+                        toast("Registered with "+srv.toString());
+                    },
+                    () -> toast("Failed to register with "+srv.toString())
+            );
+        } else {
+            network.sendToHost(
+                    ProtocolMessage.hello(),
+                    new SalutCallback() {
+                        @Override
+                        public void call() {
+                            Log.w(TAG,"failed to send data to host!");
+                        }
+                    });
+        }
 
     }
 
-    public void onClick_discover(View v){
-
-        proto = new Protocol(this, Protocol.ROLE.CLIENT);
-
-
-    }
 
 
 

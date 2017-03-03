@@ -40,7 +40,7 @@
         android:ems="10"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:id="@+id/editText2"
+        android:id="@+id/author_edit"
         android:text="sr" />
 
     <TextView
@@ -49,8 +49,8 @@
         android:layout_height="wrap_content"
         android:id="@+id/textView12"
         android:layout_marginStart="34dp"
-        android:layout_alignBaseline="@+id/editText2"
-        android:layout_alignBottom="@+id/editText2"
+        android:layout_alignBaseline="@+id/author_edit"
+        android:layout_alignBottom="@+id/author_edit"
         android:layout_alignParentStart="true" />
 
     <EditText
@@ -58,9 +58,9 @@
         android:layout_height="wrap_content"
         android:inputType="textMultiLine"
         android:ems="10"
-        android:layout_below="@+id/editText2"
+        android:layout_below="@+id/author_edit"
         android:layout_alignParentStart="true"
-        android:id="@+id/editText4"
+        android:id="@+id/messageBody_edit"
         android:layout_alignParentEnd="true"
         android:text="I am looking for my son. Age: 16, 170cm tall, short dark hair, blue eyes. Anybody finding him is asked to contact volunteer camp 17." />
 
@@ -70,7 +70,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
-        android:id="@+id/button4"
+        android:id="@+id/post_button"
         android:layout_alignParentEnd="true" />
 
 </RelativeLayout>

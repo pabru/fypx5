@@ -25,36 +25,27 @@
             android:layout_alignParentStart="true"
             android:id="@+id/button3" />
 
-        <TextView
-            android:text="Author: sr, Date 11/04/2017"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/textView2" />
 
-        <TextView
-            android:text="I am looking for my son. Age: 16, 170cm tall, short dark hair, blue eyes. Anybody finding him is asked to contact volunteer camp 17."
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/textView5"
-            android:textAppearance="@android:style/TextAppearance.Material.Medium" />
 
-        <Space
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="3mm" />
+            android:layout_height="wrap_content">
 
-        <TextView
-            android:text="Author: ta (volunteer, Camp 11), Date: 08/04/2017"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/textView6" />
+            <TextView
+                android:text="Author: ta (volunteer, Camp 11), Date: 08/04/2017"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView6" />
 
-        <TextView
-            android:text="TextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/textView7"
-            tools:text="Found small girl age 8, 110 cm tall, blonde long hair, grey eyes. Says mother's name is Sofia. Mother, father or relatives asked to contact ta or bq in Camp 11 when possible to arrange reunion."
-            android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+            <TextView
+                android:text="TextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView7"
+                tools:text="Found small girl age 8, 110 cm tall, blonde long hair, grey eyes. Says mother's name is Sofia. Mother, father or relatives asked to contact ta or bq in Camp 11 when possible to arrange reunion."
+                android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+        </LinearLayout>
 
     </LinearLayout>
 

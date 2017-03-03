@@ -14,6 +14,6 @@ public class ChatMessage {
 
     public String messageHash;
     public String author;
-    public Date created;
+    public Date created = new Date();
     public String body;
 }

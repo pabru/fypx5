@@ -35,6 +35,10 @@ public class ProtocolMessage {
     public List<ChatMessage> chatMessages;
     public boolean successful;
 
+    private ProtocolMessage(){
+        //don't touch, for serialise/deserialise use only!
+    }
+
     public ProtocolMessage(ProtocolMessage.TYPE type){
         this.pMsgType = type.toString();
     }

@@ -4,20 +4,20 @@ import android.app.Activity;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.util.Log;
 
+import com.bluelinelabs.logansquare.LoganSquare;
 import com.pandruszkow.fypx5.ToastableActivity;
-import com.pandruszkow.fypx5.protocol.message.ChatMessage;
-import com.pandruszkow.fypx5.protocol.message.ProtocolMessage;
+import com.pandruszkow.fypx5.protocol.message.*;
 import com.peak.salut.Callbacks.SalutDataCallback;
 import com.peak.salut.Salut;
 import com.peak.salut.SalutDataReceiver;
 import com.peak.salut.SalutDevice;
-import com.peak.salut.SalutServiceData;
 
+import java.io.IOException;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 /**
  * Created by piotrek on 23/02/17.
@@ -26,55 +26,54 @@ public class Protocol implements SalutDataCallback {
 
     private final static String TAG = Protocol.class.getCanonicalName();
 
-    public final static String applicationName = "fypx5";
-    public final static int portNumber = 50123;
-    public final static String peerId = ""+new Random().nextInt(50); //to keep the peer Id fairly short. Android NSD name length restriction.
-    private final static SalutServiceData salutServiceData = new SalutServiceData(applicationName, portNumber, peerId);
-    private Map<String, ChatMessage> messageStore = new HashMap<>();
-
-
-    private Salut network = null;
+    //stores messages we know about and have on the device
+    private static Map<String, ChatMessage> messageStore = new HashMap<>();
+    //where in the protocol progress we are
+    private STATE protoState = STATE.HELLO;
+    //are we a server or a client
     private ROLE peerRole = ROLE.SERVER;
+    //the other device we're speaking to
+    private SalutDevice otherDevice = null;
+    //object to access the network stack
+    private Salut network = null;
 
-    public Protocol(final Activity parent, ROLE initialRole){
-        this.network = new Salut(
-                new SalutDataReceiver(parent, this),
-                salutServiceData,
-                //callback in case wifi direct fails
-                () -> ((ToastableActivity) parent).toast("Wifi Direct not supported on this device")
-        );
-
-        this.peerRole = initialRole;
-        switch(initialRole){
-            case SERVER:
-                this.network.startNetworkService((device)->Log.d(TAG, device.readableName + " has connected!"));
-                break;
-            case CLIENT:
-                this.network.discoverNetworkServices((device -> {
-                    Log.d(TAG, "A device has connected with the name " + device.deviceName);
-                }), true);
-                break;
-        }
+    public static void storeMessage(ChatMessage msg){
+        messageStore.put(msg.messageHash, msg);
     }
 
-    public void runMessageStoreSync(WifiP2pDevice peer, boolean isClient){
+    public Protocol(final ToastableActivity parent, Salut network){
+        //note - it is assumed we start off as a server and switch to a client to "go outwards" for message sync
 
-        hello(isClient);
+        this.network = network;
+        //become server
+        this.network.startNetworkService((device)->parent.toast(device.readableName + " has connected!"));
+    }
 
-        List<String> theirHashes = sync_hashes(isClient, new ArrayList<>(messageStore.keySet()));
+    public void runMessageStoreSync(WifiP2pDevice peer){
+
+        // it is assumed that we will switch to client mode for the duration
+        this.network.stopNetworkService(false);
+
+        peerRole = ROLE.CLIENT;
+        this.network.discoverNetworkServices((device -> {
+            Log.d(TAG, "A device has connected with the name " + device.deviceName);
+        }), true);
+
+        say(ProtocolMessage.hello());
+
+        List<String> theirHashes = sync_hashes(new ArrayList<>(messageStore.keySet()));
         Map<String, ChatMessage> messagesToSend = findOurMessagesNotInTheirMessageStore(theirHashes);
 
-        Map<String, ChatMessage> theirMessagesWeAreMissing = sync_messages(isClient, messagesToSend);
+        Map<String, ChatMessage> theirMessagesWeAreMissing = sync_messages(messagesToSend);
 
-        bye(isClient);
     }
 
 
-    private Map<String,ChatMessage> sync_messages(boolean isClient, Map<String,ChatMessage> ourMessagesTheyAreMissing){
+    private Map<String,ChatMessage> sync_messages(Map<String,ChatMessage> ourMessagesTheyAreMissing){
 
         Map<String,ChatMessage> theirMessagesWeAreMissing;
 
-        if(isClient){
+        if(isClient()){
             say(ProtocolMessage.sync_messages(ourMessagesTheyAreMissing));
             theirMessagesWeAreMissing = listenTo_sync_messages();
         } else {
@@ -85,11 +84,11 @@ public class Protocol implements SalutDataCallback {
         return theirMessagesWeAreMissing;
     }
 
-    private List<String> sync_hashes(boolean isClient, List<String> ourHashes){
+    private List<String> sync_hashes(List<String> ourHashes){
         ProtocolMessage pmOurHashes = ProtocolMessage.sync_hashes(ourHashes);
         ProtocolMessage pmTheirHashes;
 
-        if(isClient) {
+        if(isClient()) {
             say(pmOurHashes);
             pmTheirHashes = listen();
         } else {
@@ -104,38 +103,6 @@ public class Protocol implements SalutDataCallback {
             return null;
         }
 
-    }
-
-    private boolean bye(boolean isClient){
-        boolean byeSuccessful = false;
-
-        if(isClient){
-            say(ProtocolMessage.bye());
-            byeSuccessful = listenTo(ProtocolMessage.bye());
-        } else {
-            byeSuccessful = listenTo(ProtocolMessage.bye());
-            say(ProtocolMessage.bye());
-        }
-
-        return byeSuccessful;
-    }
-    private boolean hello(boolean isClient){
-        boolean helloSuccessful = false;
-
-        if(isClient){
-
-            say(ProtocolMessage.hello());
-
-            helloSuccessful = listenTo(ProtocolMessage.hello());
-
-        } else {
-
-            helloSuccessful = listenTo(ProtocolMessage.hello());
-
-            if(helloSuccessful) say(ProtocolMessage.hello());
-        }
-
-        return helloSuccessful;
     }
 
     private Map<String, ChatMessage> findOurMessagesNotInTheirMessageStore(List<String> theirHashes) {
@@ -176,7 +143,11 @@ public class Protocol implements SalutDataCallback {
     }
 
     private void say(ProtocolMessage pMsg){
-        //TODO!
+        if(isClient()){
+            network.sendToHost(pMsg, ()-> Log.d(TAG, "Failed to send message to host device: " + pMsg.toString()));
+        } else {
+            network.sendToDevice(otherDevice, pMsg, ()-> Log.d(TAG, "Failed to send message to device: " + pMsg.toString()));
+        }
     }
     private ProtocolMessage listen(){
         //TODO!
@@ -185,14 +156,52 @@ public class Protocol implements SalutDataCallback {
     private boolean listenTo(ProtocolMessage expectedReply){
         return listen().equals(expectedReply);
     }
-
+    private boolean isClient(){
+        return peerRole.equals(ROLE.CLIENT);
+    }
+    private boolean isServer() { return peerRole.equals(ROLE.SERVER); }
     @Override
     public void onDataReceived(Object o) {
+        try {
+            Log.d(TAG, "received following object in onDataReceived: " + o.toString());
+            ProtocolMessage pM = LoganSquare.parse((String) o, ProtocolMessage.class);
+            ProtocolMessage.TYPE type = ProtocolMessage.TYPE.valueOf(pM.pMsgType);
 
+            switch (protoState) {
+                case HELLO:
+                    if(isServer()){
+                        say(ProtocolMessage.hello());
+                    }  //else we don't care
+                    break;
+                case SYNC_HASH:
+
+                    break;
+                case SYNC_MSGS:
+
+                    break;
+                case BYE:
+                    if(isServer()){
+                        say(ProtocolMessage.bye());
+                    } //else we don't care
+                    break;
+            }
+
+
+        } catch (IllegalArgumentException iae){
+            Log.w(TAG, "Unknown Protocol Message type in onDataReceived!");
+        } catch (IOException ioe){
+            Log.w(TAG, "Erroneous, malformed or missing data received!");
+        }
     }
 
     public enum ROLE {
         CLIENT,
         SERVER
+    }
+    public enum STATE {
+        HELLO,
+        SYNC_HASH,
+        SYNC_MSGS,
+        BYE
     }
 }

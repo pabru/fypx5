@@ -27,7 +27,8 @@
         android:id="@+id/hosting_button"
         android:text="be discoverable"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:onClick="onClick_serverButton" />
 
     <Button
         android:text="discover"
@@ -35,13 +36,14 @@
         android:layout_height="wrap_content"
         android:id="@+id/discover_services"
         android:layout_alignParentTop="true"
-        android:layout_toEndOf="@+id/hosting_button" />
+        android:layout_toEndOf="@+id/hosting_button"
+        android:onClick="onClick_discoverButton" />
 
     <Button
-        android:text="Button"
+        android:text="THird"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:id="@+id/button7" />
+        android:id="@+id/third_button_h1" />
 </RelativeLayout>

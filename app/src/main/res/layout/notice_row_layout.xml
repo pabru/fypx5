@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+xmlns:android="http://schemas.android.com/apk/res/android"
+android:orientation="vertical"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:id="@+id/notice_row_layout">
+
+<TextView
+    android:text="Author: sr, Date 11/04/2017"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/noticeMetadata_text" />
+
+<TextView
+    android:text="I am looking for my son. Age: 16, 170cm tall, short dark hair, blue eyes. Anybody finding him is asked to contact volunteer camp 17."
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/noticeBody_text"
+    android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+
+<Space
+    android:layout_width="match_parent"
+    android:layout_height="3mm" />
+
+</LinearLayout>
