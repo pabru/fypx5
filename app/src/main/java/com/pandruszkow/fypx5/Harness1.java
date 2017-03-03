@@ -10,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bluelinelabs.logansquare.LoganSquare;
+import com.pandruszkow.fypx5.protocol.ClientProtocol;
 import com.pandruszkow.fypx5.protocol.Config;
 import com.pandruszkow.fypx5.protocol.ServerProtocol;
 import com.pandruszkow.fypx5.protocol.Protocol;
@@ -52,8 +53,6 @@ public class Harness1 extends Activity implements ToastableActivity, SalutDataCa
             }
         });
 
-        proto = new ServerProtocol();
-
         network = new Salut(
                 new SalutDataReceiver(this, this),
                 Config.salutServiceData,
@@ -66,7 +65,6 @@ public class Harness1 extends Activity implements ToastableActivity, SalutDataCa
                 }
         );
 
-
         har1_txtV = (TextView) findViewById(R.id.har1_txt);
     }
 
@@ -74,6 +72,7 @@ public class Harness1 extends Activity implements ToastableActivity, SalutDataCa
     public void onDataReceived(Object o){
         try {
             ProtocolMessage pM = LoganSquare.parse(o.toString(), ProtocolMessage.class);
+            proto.receive(pM);
         } catch (IOException ioe){
             toast("Received corrupt or malformed message: "+o.toString());
         }
@@ -83,13 +82,13 @@ public class Harness1 extends Activity implements ToastableActivity, SalutDataCa
     public void onClick_serverButton(View v) {
 
         if (!network.isRunningAsHost) {
+            proto = new ServerProtocol();
             network.startNetworkService(new SalutDeviceCallback() {
                 @Override
                 public void call(SalutDevice salutDevice) {
                     toast("Device: " + salutDevice.instanceName + " connected to server.");
                 }
             });
-            proto = new ServerProtocol();
 
             hostingBtn.setText("Stop Service");
             discoverBtn.setAlpha(0.5f);
@@ -105,6 +104,7 @@ public class Harness1 extends Activity implements ToastableActivity, SalutDataCa
     public void onClick_discoverButton(View v){
         if(!network.isRunningAsHost && !network.isDiscovering)
         {
+            proto = new ClientProtocol();
             network.discoverNetworkServices(new SalutCallback() {
                 @Override
                 public void call() {

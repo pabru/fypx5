@@ -19,7 +19,7 @@ public class ServerProtocol extends Protocol {
     private STATE protoState = STATE.READY_FOR_HELLO;
 
     private List<String> theirHashes;
-    public ProtocolMessage receiveMessage(ProtocolMessage pM) {
+    public ProtocolMessage receive(ProtocolMessage pM) {
 
         Log.d(TAG, "received following ProtocolMessage: " + pM.toString());
         ProtocolMessage.TYPE type = pM.pMsgType;

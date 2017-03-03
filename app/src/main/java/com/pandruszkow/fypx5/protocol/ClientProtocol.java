@@ -19,7 +19,7 @@ public class ClientProtocol extends Protocol {
     private STATE protoState = STATE.BEGIN;
 
     private List<String> theirHashes;
-    public ProtocolMessage step(ProtocolMessage pM) {
+    public ProtocolMessage receive(ProtocolMessage pM) {
 
         Log.d(TAG, "received following ProtocolMessage: " + pM.toString());
         ProtocolMessage.TYPE type = (pM != null) ? pM.pMsgType : null;

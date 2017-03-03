@@ -1,6 +1,7 @@
 package com.pandruszkow.fypx5.protocol;
 
 import com.pandruszkow.fypx5.protocol.message.ChatMessage;
+import com.pandruszkow.fypx5.protocol.message.ProtocolMessage;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,6 +20,7 @@ public abstract class Protocol {
         messageStore.put(msg.messageHash, msg);
     }
 
+    public abstract ProtocolMessage receive(ProtocolMessage pM);
 
     protected Map<String, ChatMessage> ourHashesNotInTheirHashes(List<String> theirHashes) {
         //filter to find which of our messages client is missing, i.e. in our store but not in their store.
