@@ -2,6 +2,7 @@ package com.pandruszkow.fypx5.protocol.message;
 
 import android.support.annotation.NonNull;
 
+import com.bluelinelabs.logansquare.annotation.JsonField;
 import com.bluelinelabs.logansquare.annotation.JsonObject;
 
 import java.util.ArrayList;
@@ -16,7 +17,8 @@ import java.util.Map;
 
 public class ProtocolMessage {
 
-    @NonNull public String pMsgType;
+    @JsonField
+    @NonNull public TYPE pMsgType;
 
     //Constant pre-canned messages to avoid regenerating objects needlessly
     private static final ProtocolMessage
@@ -31,16 +33,19 @@ public class ProtocolMessage {
             }
     //End constants
 
-    public List<String> requestedMessageHashes;
+    @JsonField
+    public List<String> haveMessageHashes;
+    @JsonField
     public List<ChatMessage> chatMessages;
-    public boolean successful;
+    @JsonField
+    public Boolean successful;
 
     protected ProtocolMessage(){
         //don't touch, for serialise/deserialise use only!
     }
 
     public ProtocolMessage(ProtocolMessage.TYPE type){
-        this.pMsgType = type.toString();
+        this.pMsgType = type;
     }
 
     public static ProtocolMessage sync_messages(Map<String, ChatMessage> messages){
@@ -55,7 +60,7 @@ public class ProtocolMessage {
     }
     public static ProtocolMessage sync_hashes(List<String> hashes){
         ProtocolMessage msg = new ProtocolMessage(TYPE.sync_hashes);
-        msg.requestedMessageHashes = hashes;
+        msg.haveMessageHashes = hashes;
         return msg;
     }
 

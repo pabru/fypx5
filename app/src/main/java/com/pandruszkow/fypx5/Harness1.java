@@ -2,7 +2,6 @@ package com.pandruszkow.fypx5;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -12,6 +11,7 @@ import android.widget.Toast;
 
 import com.bluelinelabs.logansquare.LoganSquare;
 import com.pandruszkow.fypx5.protocol.Config;
+import com.pandruszkow.fypx5.protocol.ServerProtocol;
 import com.pandruszkow.fypx5.protocol.Protocol;
 import com.pandruszkow.fypx5.protocol.message.ProtocolMessage;
 import com.peak.salut.Callbacks.SalutCallback;
@@ -22,7 +22,7 @@ import com.peak.salut.SalutDataReceiver;
 import com.peak.salut.SalutDevice;
 import com.peak.salut.SalutServiceData;
 
-import java.util.List;
+import java.io.IOException;
 
 public class Harness1 extends Activity implements ToastableActivity, SalutDataCallback{
 
@@ -52,6 +52,7 @@ public class Harness1 extends Activity implements ToastableActivity, SalutDataCa
             }
         });
 
+        proto = new ServerProtocol();
 
         network = new Salut(
                 new SalutDataReceiver(this, this),
@@ -71,7 +72,11 @@ public class Harness1 extends Activity implements ToastableActivity, SalutDataCa
 
     @Override
     public void onDataReceived(Object o){
-        //ProtocolMessage pM = LoganSquare.parse(o.toString(), ProtocolMessage.class);
+        try {
+            ProtocolMessage pM = LoganSquare.parse(o.toString(), ProtocolMessage.class);
+        } catch (IOException ioe){
+            toast("Received corrupt or malformed message: "+o.toString());
+        }
         toast("Received data! : "+(String)o);
     }
 
@@ -84,6 +89,7 @@ public class Harness1 extends Activity implements ToastableActivity, SalutDataCa
                     toast("Device: " + salutDevice.instanceName + " connected to server.");
                 }
             });
+            proto = new ServerProtocol();
 
             hostingBtn.setText("Stop Service");
             discoverBtn.setAlpha(0.5f);
