@@ -35,7 +35,7 @@ public class ProtocolMessage {
     public List<ChatMessage> chatMessages;
     public boolean successful;
 
-    private ProtocolMessage(){
+    protected ProtocolMessage(){
         //don't touch, for serialise/deserialise use only!
     }
 

@@ -10,11 +10,13 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bluelinelabs.logansquare.LoganSquare;
 import com.pandruszkow.fypx5.protocol.Config;
 import com.pandruszkow.fypx5.protocol.Protocol;
 import com.pandruszkow.fypx5.protocol.message.ProtocolMessage;
 import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Callbacks.SalutDataCallback;
+import com.peak.salut.Callbacks.SalutDeviceCallback;
 import com.peak.salut.Salut;
 import com.peak.salut.SalutDataReceiver;
 import com.peak.salut.SalutDevice;
@@ -43,14 +45,24 @@ public class Harness1 extends Activity implements ToastableActivity, SalutDataCa
         hostingBtn = (Button) findViewById(R.id.hosting_button);
         discoverBtn = (Button) findViewById(R.id.discover_services);
         Button thirdBtn = (Button) findViewById(R.id.third_button_h1);
-        thirdBtn.setOnClickListener((v)->onClick_thirdB(v));
+        thirdBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onClick_thirdB(view);
+            }
+        });
 
 
         network = new Salut(
                 new SalutDataReceiver(this, this),
                 Config.salutServiceData,
                 //callback in case wifi direct fails
-                () ->  toast("Wifi Direct not supported on this device")
+                new SalutCallback() {
+                    @Override
+                    public void call() {
+                        toast("Wifi Direct not supported on this device");
+                    }
+                }
         );
 
 
@@ -59,14 +71,19 @@ public class Harness1 extends Activity implements ToastableActivity, SalutDataCa
 
     @Override
     public void onDataReceived(Object o){
-        toast("Received data! : "+o);
+        //ProtocolMessage pM = LoganSquare.parse(o.toString(), ProtocolMessage.class);
+        toast("Received data! : "+(String)o);
     }
 
     public void onClick_serverButton(View v) {
 
         if (!network.isRunningAsHost) {
-            network.startNetworkService((salutDevice) -> toast("Device: " + salutDevice.instanceName + " connected to server.")
-            );
+            network.startNetworkService(new SalutDeviceCallback() {
+                @Override
+                public void call(SalutDevice salutDevice) {
+                    toast("Device: " + salutDevice.instanceName + " connected to server.");
+                }
+            });
 
             hostingBtn.setText("Stop Service");
             discoverBtn.setAlpha(0.5f);
@@ -82,9 +99,12 @@ public class Harness1 extends Activity implements ToastableActivity, SalutDataCa
     public void onClick_discoverButton(View v){
         if(!network.isRunningAsHost && !network.isDiscovering)
         {
-            network.discoverNetworkServices(() -> {
-                for(SalutDevice dev : network.foundDevices) {
-                    toast("Server: " + dev.instanceName + " found.");
+            network.discoverNetworkServices(new SalutCallback() {
+                @Override
+                public void call() {
+                    for(SalutDevice dev : network.foundDevices) {
+                        toast("Server: " + dev.instanceName + " found.");
+                    }
                 }
             }, true);
             discoverBtn.setText("Stop Discovery");
@@ -111,14 +131,22 @@ public class Harness1 extends Activity implements ToastableActivity, SalutDataCa
         Intent postNewI = new Intent(this, goTo);
         //startActivity(postNewI);
 
-        SalutDevice srv = network.foundDevices.get(0);
+        final SalutDevice srv = network.foundDevices.get(0);
 
         if(network.registeredHost==null){
             network.registerWithHost(srv,
-                    () -> {
-                        toast("Registered with "+srv.toString());
+                    new SalutCallback() {
+                        @Override
+                        public void call() {
+                            toast("Registered with " + srv.toString());
+                        }
                     },
-                    () -> toast("Failed to register with "+srv.toString())
+                    new SalutCallback() {
+                        @Override
+                        public void call() {
+                            toast("Failed to register with " + srv.toString());
+                        }
+                    }
             );
         } else {
             network.sendToHost(

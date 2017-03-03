@@ -17,7 +17,12 @@ public class PostNoticeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post_notice);
 
-        ((Button) findViewById(R.id.post_button)).setOnClickListener((v)->onClick_postNoticeButton(v));
+        ((Button) findViewById(R.id.post_button)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onClick_postNoticeButton(view);
+            }
+        });
     }
 
     public void onClick_postNoticeButton(View v){

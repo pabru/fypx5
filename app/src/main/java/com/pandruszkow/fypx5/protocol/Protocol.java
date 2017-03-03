@@ -7,7 +7,9 @@ import android.util.Log;
 import com.bluelinelabs.logansquare.LoganSquare;
 import com.pandruszkow.fypx5.ToastableActivity;
 import com.pandruszkow.fypx5.protocol.message.*;
+import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Callbacks.SalutDataCallback;
+import com.peak.salut.Callbacks.SalutDeviceCallback;
 import com.peak.salut.Salut;
 import com.peak.salut.SalutDataReceiver;
 import com.peak.salut.SalutDevice;
@@ -46,7 +48,12 @@ public class Protocol implements SalutDataCallback {
 
         this.network = network;
         //become server
-        this.network.startNetworkService((device)->parent.toast(device.readableName + " has connected!"));
+        this.network.startNetworkService(new SalutDeviceCallback() {
+            @Override
+            public void call(SalutDevice salutDevice) {
+                parent.toast(salutDevice.readableName + " has connected!");
+            }
+        });
     }
 
     public void runMessageStoreSync(WifiP2pDevice peer){
@@ -55,9 +62,12 @@ public class Protocol implements SalutDataCallback {
         this.network.stopNetworkService(false);
 
         peerRole = ROLE.CLIENT;
-        this.network.discoverNetworkServices((device -> {
-            Log.d(TAG, "A device has connected with the name " + device.deviceName);
-        }), true);
+        this.network.discoverNetworkServices(new SalutDeviceCallback() {
+            @Override
+            public void call(SalutDevice salutDevice) {
+                Log.d(TAG, "A device has connected with the name " + salutDevice.deviceName);
+            }
+        }, true);
 
         say(ProtocolMessage.hello());
 
@@ -142,11 +152,21 @@ public class Protocol implements SalutDataCallback {
 
     }
 
-    private void say(ProtocolMessage pMsg){
+    private void say(final ProtocolMessage pMsg){
         if(isClient()){
-            network.sendToHost(pMsg, ()-> Log.d(TAG, "Failed to send message to host device: " + pMsg.toString()));
+            network.sendToHost(pMsg, new SalutCallback() {
+                @Override
+                public void call() {
+                    Log.d(TAG, "Failed to send message to host device: " + pMsg.toString());
+                }
+            });
         } else {
-            network.sendToDevice(otherDevice, pMsg, ()-> Log.d(TAG, "Failed to send message to device: " + pMsg.toString()));
+            network.sendToDevice(otherDevice, pMsg, new SalutCallback() {
+                @Override
+                public void call() {
+                    Log.d(TAG, "Failed to send message to  device: " + pMsg.toString());
+                }
+            });
         }
     }
     private ProtocolMessage listen(){
