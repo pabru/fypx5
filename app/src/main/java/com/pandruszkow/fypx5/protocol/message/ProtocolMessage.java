@@ -4,6 +4,8 @@ import android.support.annotation.NonNull;
 
 import com.bluelinelabs.logansquare.annotation.JsonField;
 import com.bluelinelabs.logansquare.annotation.JsonObject;
+import com.bluelinelabs.logansquare.typeconverters.StringBasedTypeConverter;
+import com.bluelinelabs.logansquare.typeconverters.TypeConverter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +19,7 @@ import java.util.Map;
 
 public class ProtocolMessage {
 
-    @JsonField
+    @JsonField (typeConverter = TYPEEnumTypeConverter.class)
     @NonNull public TYPE pMsgType;
 
     //Constant pre-canned messages to avoid regenerating objects needlessly
@@ -84,6 +86,20 @@ public class ProtocolMessage {
         sync_messages,
         reply,
         bye,
+    }
+    protected static class TYPEEnumTypeConverter extends StringBasedTypeConverter<TYPE> {
+
+        public TYPEEnumTypeConverter(){};
+
+        @Override
+        public TYPE getFromString(String string) {
+            return TYPE.valueOf(string);
+        }
+
+        @Override
+        public String convertToString(TYPE object) {
+            return object.toString();
+        }
     }
 
 }

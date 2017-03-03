@@ -71,12 +71,17 @@ public class Harness1 extends Activity implements ToastableActivity, SalutDataCa
     @Override
     public void onDataReceived(Object o){
         try {
-            ProtocolMessage pM = LoganSquare.parse(o.toString(), ProtocolMessage.class);
-            proto.receive(pM);
+            ProtocolMessage incoming = LoganSquare.parse(o.toString(), ProtocolMessage.class);
+            ProtocolMessage reply = proto.receive(incoming);
+            if(!network.isRunningAsHost){
+                network.sendToHost(reply, null);
+            } else {
+                network.sendToAllDevices(reply, null);
+            }
         } catch (IOException ioe){
             toast("Received corrupt or malformed message: "+o.toString());
         }
-        toast("Received data! : "+(String)o);
+        har1_txtV.setText("Received data! : "+(String)o);
     }
 
     public void onClick_serverButton(View v) {
@@ -90,12 +95,12 @@ public class Harness1 extends Activity implements ToastableActivity, SalutDataCa
                 }
             });
 
-            hostingBtn.setText("Stop Service");
+            hostingBtn.setText("Stop");
             discoverBtn.setAlpha(0.5f);
             discoverBtn.setClickable(false);
         } else {
             network.stopNetworkService(false);
-            hostingBtn.setText("Start Service");
+            hostingBtn.setText("Start");
             discoverBtn.setAlpha(1f);
             discoverBtn.setClickable(true);
         }
@@ -113,14 +118,14 @@ public class Harness1 extends Activity implements ToastableActivity, SalutDataCa
                     }
                 }
             }, true);
-            discoverBtn.setText("Stop Discovery");
+            discoverBtn.setText("Stop Discover");
             hostingBtn.setAlpha(0.5f);
             hostingBtn.setClickable(false);
         }
         else
         {
             network.stopServiceDiscovery(false);
-            discoverBtn.setText("Discover Services");
+            discoverBtn.setText("Start Discover");
             hostingBtn.setAlpha(1f);
             hostingBtn.setClickable(false);
         }
@@ -155,8 +160,8 @@ public class Harness1 extends Activity implements ToastableActivity, SalutDataCa
                     }
             );
         } else {
-            network.sendToHost(
-                    ProtocolMessage.hello(),
+
+            network.sendToHost(proto.receive(null),
                     new SalutCallback() {
                         @Override
                         public void call() {
