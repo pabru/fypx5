@@ -1,9 +1,8 @@
-package com.pandruszkow.fypx5.protocol;
+package com.pandruszkow.fypx5.protocol.proto;
 
 import android.util.Log;
 
-import com.pandruszkow.fypx5.protocol.message.ChatMessage;
-import com.pandruszkow.fypx5.protocol.message.ProtocolMessage;
+import com.pandruszkow.fypx5.protocol.message.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,45 +10,44 @@ import java.util.List;
 /**
  * Created by piotrek on 23/02/17.
  */
-public class ClientProtocol extends Protocol {
+public class ServerProtocol extends Protocol {
 
-    private final static String TAG = ClientProtocol.class.getCanonicalName();
+    private final static String TAG = ServerProtocol.class.getCanonicalName();
+
 
     //where in the protocol progress we are
-    private STATE protoState = STATE.BEGIN;
+    private STATE protoState = STATE.READY_FOR_HELLO;
 
     private List<String> theirHashes;
     public ProtocolMessage receive(ProtocolMessage pM) {
 
         Log.d(TAG, "received following ProtocolMessage: " + pM.toString());
-        ProtocolMessage.TYPE type = (pM != null) ? pM.pMsgType : null;
+        ProtocolMessage.TYPE type = pM.pMsgType;
 
         switch (protoState) {
-            case BEGIN:
-                protoState = STATE.ACCEPT_HELLO_SEND_OUR_SYNC_HASHES;
-                return ProtocolMessage.hello();
-            case ACCEPT_HELLO_SEND_OUR_SYNC_HASHES:
+            case READY_FOR_HELLO:
                 if(type == ProtocolMessage.TYPE.hello) {
-                    protoState = STATE.ACCEPT_HASHES_SEND_OUR_MESSAGES;
+                    protoState = STATE.READY_FOR_SYNC_HASH;
+                    return ProtocolMessage.hello();
+                } else {
+                    return null;
+                }
+            case READY_FOR_SYNC_HASH:
+                if(type == ProtocolMessage.TYPE.sync_hashes){
+                    theirHashes = pM.haveMessageHashes;
+                    protoState = STATE.READY_FOR_SYNC_MSGS;
                     return ProtocolMessage.sync_hashes(new ArrayList<>(messageStore.keySet()));
                 } else {
                     return null;
                 }
-            case ACCEPT_HASHES_SEND_OUR_MESSAGES:
-                if(type == ProtocolMessage.TYPE.sync_hashes){
-                    theirHashes = pM.haveMessageHashes;
-                    protoState = STATE.ACCEPT_THEIR_MESSAGES_SEND_BYE;
-                    return ProtocolMessage.sync_messages(ourHashesNotInTheirHashes(theirHashes));
-                } else {
-                    return null;
-                }
-            case ACCEPT_THEIR_MESSAGES_SEND_BYE:
+            case READY_FOR_SYNC_MSGS:
                 if(type == ProtocolMessage.TYPE.sync_messages) {
                     for(ChatMessage cM : pM.chatMessages){
                         messageStore.put(cM.messageHash, cM);
                     }
                     protoState = STATE.READY_FOR_BYE;
-                    return ProtocolMessage.bye();
+                    return ProtocolMessage.sync_messages(
+                            ourHashesNotInTheirHashes(theirHashes));
                 } else {
                     return null;
                 }
@@ -66,12 +64,12 @@ public class ClientProtocol extends Protocol {
     }
 
     public enum STATE {
-        BEGIN,
-        ACCEPT_HELLO_SEND_OUR_SYNC_HASHES,
-        ACCEPT_HASHES_SEND_OUR_MESSAGES,
-        ACCEPT_THEIR_MESSAGES_SEND_BYE,
+        READY_FOR_HELLO,
+        READY_FOR_SYNC_HASH,
+        READY_FOR_SYNC_MSGS,
         READY_FOR_BYE,
         END
     }
+
 
 }

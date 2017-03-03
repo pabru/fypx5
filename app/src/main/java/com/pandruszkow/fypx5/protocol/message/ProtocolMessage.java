@@ -102,4 +102,14 @@ public class ProtocolMessage {
         }
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ProtocolMessage{");
+        sb.append("pMsgType=").append(pMsgType);
+        sb.append(", haveMessageHashes=").append(haveMessageHashes);
+        sb.append(", chatMessages=").append(chatMessages);
+        sb.append(", successful=").append(successful);
+        sb.append('}');
+        return sb.toString();
+    }
 }

@@ -10,40 +10,81 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.pandruszkow.fypx5.Harness1">
 
-    <TextView
-        android:text="har1_txt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/hosting_button"
-        android:layout_marginTop="20dp"
-        android:id="@+id/har1_txt"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentStart="true" />
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/hosting_button"
-        android:text="be discoverable"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:onClick="onClick_serverButton" />
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-    <Button
-        android:text="discover"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/discover_services"
-        android:layout_alignParentTop="true"
-        android:layout_toEndOf="@+id/hosting_button"
-        android:onClick="onClick_discoverButton" />
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/hosting_button"
+                android:text="be discoverable"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentStart="true"
+                android:onClick="onClick_serverButton"
+                android:layout_weight="1" />
 
-    <Button
-        android:text="THird"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:id="@+id/third_button_h1" />
+            <Button
+                android:text="discover"
+                android:layout_height="wrap_content"
+                android:id="@+id/discover_services"
+                android:layout_alignParentTop="true"
+                android:layout_toEndOf="@+id/hosting_button"
+                android:onClick="onClick_discoverButton"
+                android:layout_weight="1"
+                android:layout_width="match_parent" />
+
+            <Button
+                android:text="THird"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:id="@+id/third_button_h1"
+                android:layout_weight="1" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.07">
+
+            <Button
+                android:text="Post message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/post_message_button"
+                android:layout_weight="1"
+                android:onClick="onClick_newMsg" />
+
+            <Button
+                android:text="show messages"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/button2"
+                android:layout_weight="1"
+                android:onClick="onClick_showMsg" />
+        </LinearLayout>
+
+        <TextView
+            android:text="har1_txt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/hosting_button"
+            android:layout_marginTop="20dp"
+            android:id="@+id/har1_txt"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentStart="true" />
+
+    </LinearLayout>
+
 </RelativeLayout>

@@ -1,5 +1,6 @@
 package com.pandruszkow.fypx5.protocol.message;
 
+import com.bluelinelabs.logansquare.annotation.JsonField;
 import com.bluelinelabs.logansquare.annotation.JsonObject;
 
 import java.util.Date;
@@ -12,8 +13,19 @@ import java.util.Date;
 
 public class ChatMessage {
 
-    public String messageHash;
-    public String author;
-    public Date created = new Date();
-    public String body;
+    @JsonField public String messageHash;
+    @JsonField public String author;
+    @JsonField public Date created = new Date();
+    @JsonField public String body;
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ChatMessage{");
+        sb.append("messageHash='").append(messageHash).append('\'');
+        sb.append(", author='").append(author).append('\'');
+        sb.append(", created=").append(created);
+        sb.append(", body='").append(body).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

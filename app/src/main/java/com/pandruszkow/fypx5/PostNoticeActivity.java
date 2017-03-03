@@ -7,7 +7,8 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.pandruszkow.fypx5.protocol.Encoding;
-import com.pandruszkow.fypx5.protocol.ServerProtocol;
+import com.pandruszkow.fypx5.protocol.proto.Protocol;
+import com.pandruszkow.fypx5.protocol.proto.ServerProtocol;
 import com.pandruszkow.fypx5.protocol.message.ChatMessage;
 
 public class PostNoticeActivity extends AppCompatActivity {
@@ -31,7 +32,7 @@ public class PostNoticeActivity extends AppCompatActivity {
         msg.body = ((EditText)findViewById(R.id.messageBody_edit)).getText().toString();
         msg.messageHash = Encoding.sha256(msg.body);
 
-        ServerProtocol.storeMessage(msg);
+        Protocol.storeMessage(msg);
 
         finish();
     }

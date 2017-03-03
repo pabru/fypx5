@@ -1,4 +1,4 @@
-package com.pandruszkow.fypx5.protocol;
+package com.pandruszkow.fypx5.protocol.proto;
 
 import com.pandruszkow.fypx5.protocol.message.ChatMessage;
 import com.pandruszkow.fypx5.protocol.message.ProtocolMessage;
@@ -21,6 +21,13 @@ public abstract class Protocol {
     }
 
     public abstract ProtocolMessage receive(ProtocolMessage pM);
+    public static String dumpMsgs(){
+        StringBuilder sb = new StringBuilder();
+        for(ChatMessage m : messageStore.values()){
+            sb.append(m.toString()).append('\n');
+        }
+        return sb.toString();
+    }
 
     protected Map<String, ChatMessage> ourHashesNotInTheirHashes(List<String> theirHashes) {
         //filter to find which of our messages client is missing, i.e. in our store but not in their store.

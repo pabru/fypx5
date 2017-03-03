@@ -10,10 +10,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bluelinelabs.logansquare.LoganSquare;
-import com.pandruszkow.fypx5.protocol.ClientProtocol;
+import com.pandruszkow.fypx5.protocol.proto.ClientProtocol;
 import com.pandruszkow.fypx5.protocol.Config;
-import com.pandruszkow.fypx5.protocol.ServerProtocol;
-import com.pandruszkow.fypx5.protocol.Protocol;
+import com.pandruszkow.fypx5.protocol.proto.ServerProtocol;
+import com.pandruszkow.fypx5.protocol.proto.Protocol;
 import com.pandruszkow.fypx5.protocol.message.ProtocolMessage;
 import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Callbacks.SalutDataCallback;
@@ -66,6 +66,8 @@ public class Harness1 extends Activity implements ToastableActivity, SalutDataCa
         );
 
         har1_txtV = (TextView) findViewById(R.id.har1_txt);
+
+        //onClick_discoverButton(null);
     }
 
     @Override
@@ -171,8 +173,14 @@ public class Harness1 extends Activity implements ToastableActivity, SalutDataCa
         }
 
     }
+    public void onClick_newMsg(View v){
+        Intent postNewI = new Intent(this, PostNoticeActivity.class);
+        startActivity(postNewI);
+    }
 
-
+    public void onClick_showMsg(View v){
+        har1_txtV.setText(Protocol.dumpMsgs());
+    }
 
 
     public void toast(String text){

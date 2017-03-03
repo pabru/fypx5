@@ -41,7 +41,7 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:id="@+id/author_edit"
-        android:text="sr" />
+        android:hint="Author" />
 
     <TextView
         android:text="Author name"
@@ -62,7 +62,7 @@
         android:layout_alignParentStart="true"
         android:id="@+id/messageBody_edit"
         android:layout_alignParentEnd="true"
-        android:text="I am looking for my son. Age: 16, 170cm tall, short dark hair, blue eyes. Anybody finding him is asked to contact volunteer camp 17." />
+        android:hint="Your message here..." />
 
     <Button
         android:text="Post"
